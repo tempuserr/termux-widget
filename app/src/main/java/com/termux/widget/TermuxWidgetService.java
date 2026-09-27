@@ -10,7 +10,9 @@ import com.termux.shared.data.IntentUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.widget.utils.ShortcutUtils;
+import com.termux.widget.utils.ShortcutsDirPreference;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,10 +96,10 @@ public final class TermuxWidgetService extends RemoteViewsService {
             // locking up the widget.
             shortcutFiles.clear();
             // Create directory if necessary so user more easily finds where to put shortcuts:
-            TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR.mkdirs();
+            File shortcutsDir = ShortcutsDirPreference.getEffectiveShortcutsDir(mContext);
+            shortcutsDir.mkdirs();
 
-            ShortcutUtils.enumerateShortcutFiles(shortcutFiles, true);
-        }
+            ShortcutUtils.enumerateShortcutFiles(shortcutFiles, shortcutsDir, true);        }
     }
 
 }

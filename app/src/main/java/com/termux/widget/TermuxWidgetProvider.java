@@ -284,6 +284,11 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         // Get canonical path of executable
         executionCommand.executable = FileUtils.getCanonicalPath(executionCommand.executable, null);
 
+        // Check whether the file currently has the exec permission bit set. Files on shared/
+        // external storage often live on filesystems (FAT/FUSE) that do not support the exec bit
+        // at all, so this is also used further below to fall back to running the script via bash.
+        boolean executableHasExecPermission = new File(executionCommand.executable).canExecute();
+
         // If executable is not a regular file, or is not readable or executable, then return
         // had the exec bit set), then return RESULT_CODE_FAILED to plugin host app.
         // Setting of read and execute permissions are only done if executable is under TermuxConstants#TERMUX_SHORTCUT_SCRIPTS_DIR_PATH

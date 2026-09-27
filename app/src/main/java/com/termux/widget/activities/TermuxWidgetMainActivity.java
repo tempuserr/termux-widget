@@ -2,6 +2,8 @@ package com.termux.widget.activities;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
+import com.termux.widget.utils.ShortcutsDirPreference;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -79,8 +81,21 @@ public class TermuxWidgetMainActivity extends AppCompatActivity {
 
         setChangeLauncherActivityStateViews();
         setMaxShortcutsLimitView();
+        setCustomShortcutsDirView();
     }
 
+    private void setCustomShortcutsDirView() {
+        EditText customShortcutsDirEditText = findViewById(R.id.edittext_custom_shortcuts_dir);
+        customShortcutsDirEditText.setText(ShortcutsDirPreference.getCustomShortcutsDirPathRaw(this));
+
+        Button saveCustomShortcutsDirButton = findViewById(R.id.button_save_custom_shortcuts_dir);
+        saveCustomShortcutsDirButton.setOnClickListener(v -> {
+            ShortcutsDirPreference.setCustomShortcutsDirPath(this, customShortcutsDirEditText.getText().toString());
+            Logger.showToast(this, "Saved. Refreshing widgets\u2026", true);
+            sendIntentToRefreshAllWidgets();
+        });
+    }
+    
     private void setMaxShortcutsLimitView() {
         LinearLayout maxShortcutsInfoLinearLayout = findViewById(R.id.linearlayout_max_shortcuts_limit_info);
         maxShortcutsInfoLinearLayout.setVisibility(View.GONE);

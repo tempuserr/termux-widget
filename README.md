@@ -1,3 +1,12 @@
+# Termux:Widget with custom scripts folder enabled
+This fork:
+- removes restriction to read only one hardcoded scripts folder at `~/.shortcuts`
+- adds option in Termux:Widget UI to type own scripts folder path
+- adds fallback to run scripts using `bash {script_name.sh}` if scripts don't have `exec` bit
+
+---
+(below original upstream docs)
+
 # Termux:Widget
 
 [![Build status](https://github.com/termux/termux-widget/workflows/Build/badge.svg)](https://github.com/termux/termux-widget/actions)

@@ -42,9 +42,6 @@ public class ShortcutUtils {
             } else if (!FileUtils.fileExists(file.getAbsolutePath(), true)) {
                 // Do not show broken symlinks
                 return false;
-            } else if (!FileUtils.isPathInDirPaths(file.getAbsolutePath(), SHORTCUT_FILES_ALLOWED_PATHS_LIST, true)) {
-                // Do not show files that are not under SHORTCUT_FILES_ALLOWED_PATHS_LIST
-                return false;
             } else if (TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR.equals(file.getParentFile()) &&
                     file.getName().equals(TermuxConstants.TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_BASENAME)) {
                 // Do not show files under TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_PATH

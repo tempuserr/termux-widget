@@ -284,20 +284,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         // Get canonical path of executable
         executionCommand.executable = FileUtils.getCanonicalPath(executionCommand.executable, null);
 
-        // If executable is not under SHORTCUT_FILES_ALLOWED_PATHS_LIST
-        if (!FileUtils.isPathInDirPaths(executionCommand.executable, ShortcutUtils.SHORTCUT_FILES_ALLOWED_PATHS_LIST, true)) {
-            errmsg = context.getString(R.string.error_executable_not_under_shortcuts_directories,
-                    Joiner.on(", ").skipNulls().join(TermuxFileUtils.getUnExpandedTermuxPaths(ShortcutUtils.SHORTCUT_FILES_ALLOWED_PATHS_LIST))) +
-                    "\n" + context.getString(R.string.msg_executable_absolute_path, executionCommand.executable);
-            Logger.logErrorAndShowToast(context, logTag, errmsg);
-            return;
-        }
-
-
-        // Check if the script currently has the executable ("x") permission set.
-        boolean executableHasExecPermission = new File(executionCommand.executable).canExecute();
-
-        // If executable is not a regular file, or is not readable (and executable, if it already
+        // If executable is not a regular file, or is not readable or executable, then return
         // had the exec bit set), then return RESULT_CODE_FAILED to plugin host app.
         // Setting of read and execute permissions are only done if executable is under TermuxConstants#TERMUX_SHORTCUT_SCRIPTS_DIR_PATH
         error = FileUtils.validateRegularFileExistenceAndPermissions("executable", executionCommand.executable,

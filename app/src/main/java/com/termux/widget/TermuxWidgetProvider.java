@@ -33,6 +33,7 @@ import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.termux.settings.preferences.TermuxWidgetAppSharedPreferences;
 import com.termux.widget.utils.ShortcutUtils;
+import com.termux.widget.utils.ShortcutsDirPreference;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -86,7 +87,8 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         // The empty view is displayed when the collection has no items. It should be a sibling
         // of the collection view:
         remoteViews.setEmptyView(R.id.widget_list, R.id.empty_view);
-        remoteViews.setTextViewText(R.id.empty_view, context.getString(R.string.msg_no_shortcut_scripts));
+        remoteViews.setTextViewText(R.id.empty_view, context.getString(R.string.msg_no_shortcut_files_found_in_directory,
+                ShortcutsDirPreference.getEffectiveShortcutsDir(context).getAbsolutePath()));
 
         // Setup intent which points to the TermuxWidgetService which will provide the views for this collection.
         Intent intent = new Intent(context, TermuxWidgetService.class);

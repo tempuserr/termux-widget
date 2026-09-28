@@ -289,6 +289,16 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         // at all, so this is also used further below to fall back to running the script via bash.
         boolean executableHasExecPermission = new File(executionCommand.executable).canExecute();
 
+        // The bash fallback is only allowed for .sh scripts. Any other file type (.html, .png, ...)
+        // without the exec bit is refused instead of being blindly passed to bash.
+        if (!executableHasExecPermission && !executionCommand.executable.toLowerCase(java.util.Locale.ROOT).endsWith(".sh")) {
+            errmsg = "Not running \"" + ShellUtils.getExecutableBasename(executionCommand.executable) +
+                    "\": the file has no exec permission and is not a .sh script." +
+                    "\n" + context.getString(R.string.msg_executable_absolute_path, executionCommand.executable);
+            Logger.logErrorAndShowToast(context, logTag, errmsg);
+            return;
+        }
+        
         // If executable is not a regular file, or is not readable or executable, then return
         // had the exec bit set), then return RESULT_CODE_FAILED to plugin host app.
         // Setting of read and execute permissions are only done if executable is under TermuxConstants#TERMUX_SHORTCUT_SCRIPTS_DIR_PATH

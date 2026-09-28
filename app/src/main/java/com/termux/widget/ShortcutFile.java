@@ -27,6 +27,7 @@ import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.termux.settings.preferences.TermuxWidgetAppSharedPreferences;
 import com.termux.widget.utils.ShortcutUtils;
+import com.termux.widget.utils.ShortcutsDirPreference;
 
 import java.io.File;
 
@@ -140,9 +141,11 @@ public final class ShortcutFile {
     @Nullable
     private File getIconFile(Context context, boolean showToastForIconUsed) {
         String errmsg;
-        String shortcutIconFilePath = TermuxConstants.TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_PATH +
+        // Icons live in the "icons" subdirectory of the effective (default or custom) scripts directory
+        String shortcutIconFilePath = new File(ShortcutsDirPreference.getEffectiveShortcutsDir(context),
+                TermuxConstants.TERMUX_SHORTCUT_SCRIPT_ICONS_DIR_BASENAME).getAbsolutePath() +
                 "/" + ShellUtils.getExecutableBasename(getPath()) + ".png";
-
+        
         FileType fileType = FileUtils.getFileType(shortcutIconFilePath, true);
         //  Ensure file or symlink points to a regular file that exists
         if (fileType != FileType.REGULAR) {
@@ -151,15 +154,6 @@ public final class ShortcutFile {
                         "\n" + context.getString(R.string.msg_icon_absolute_path, shortcutIconFilePath);
                 Logger.logErrorAndShowToast(context, LOG_TAG, errmsg);
             }
-            return null;
-        }
-
-        // Do not allow shortcut icons files not under SHORTCUT_ICONS_FILES_ALLOWED_PATHS_LIST
-        if (!FileUtils.isPathInDirPaths(shortcutIconFilePath, ShortcutUtils.SHORTCUT_ICONS_FILES_ALLOWED_PATHS_LIST, true)) {
-            errmsg = context.getString(R.string.error_icon_not_under_shortcut_icons_directories,
-                    Joiner.on(", ").skipNulls().join(TermuxFileUtils.getUnExpandedTermuxPaths(ShortcutUtils.SHORTCUT_ICONS_FILES_ALLOWED_PATHS_LIST))) +
-                    "\n" + context.getString(R.string.msg_icon_absolute_path, shortcutIconFilePath);
-            Logger.logErrorAndShowToast(context, LOG_TAG, errmsg);
             return null;
         }
 

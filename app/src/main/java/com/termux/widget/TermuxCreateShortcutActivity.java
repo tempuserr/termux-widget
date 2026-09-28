@@ -18,6 +18,7 @@ import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.widget.utils.ShortcutUtils;
+import com.termux.widget.utils.ShortcutsDirPreference;
 
 import java.io.File;
 import java.util.Arrays;
@@ -50,8 +51,8 @@ public class TermuxCreateShortcutActivity extends AppCompatActivity {
             return;
         }
 
-        updateListview(TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR);
-
+        updateListview(ShortcutsDirPreference.getEffectiveShortcutsDir(this));
+        
         mListView.setOnItemClickListener((parent, view, position, id) -> {
             final Context context = TermuxCreateShortcutActivity.this;
             File clickedFile = mCurrentFiles[position];
@@ -72,14 +73,15 @@ public class TermuxCreateShortcutActivity extends AppCompatActivity {
 
         Arrays.sort(mCurrentFiles, (f1, f2) -> f1.getName().compareTo(f2.getName()));
 
-        final boolean isTopDir = directory.equals(TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR);
+        final File topDir = ShortcutsDirPreference.getEffectiveShortcutsDir(this);
+        final boolean isTopDir = directory.equals(topDir);
         AppCompatActivityUtils.setShowBackButtonInActionBar(this, !isTopDir);
 
         if (isTopDir && mCurrentFiles.length == 0) {
             // Create if necessary so user can more easily add.
-            TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR.mkdirs();
+            topDir.mkdirs();
             new AlertDialog.Builder(this)
-                    .setMessage(R.string.msg_no_shortcut_scripts)
+                    .setMessage(getString(R.string.msg_no_shortcut_files_found_in_directory, topDir.getAbsolutePath()))
                     .setOnDismissListener(dialog -> finish()).show();
             return;
         }

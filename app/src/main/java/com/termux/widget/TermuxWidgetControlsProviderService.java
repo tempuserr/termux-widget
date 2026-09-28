@@ -20,6 +20,7 @@ import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
 import com.termux.shared.termux.TermuxConstants.TERMUX_WIDGET_APP;
 import com.termux.shared.termux.settings.preferences.TermuxWidgetAppSharedPreferences;
 import com.termux.widget.utils.ShortcutUtils;
+import com.termux.widget.utils.ShortcutsDirPreference;
 
 import org.reactivestreams.FlowAdapters;
 
@@ -229,7 +230,7 @@ public class TermuxWidgetControlsProviderService extends ControlsProviderService
      * @return List<File>
      */
     private List<File> createShortcutFilesList() {
-        File shortcutDir = TermuxConstants.TERMUX_SHORTCUT_SCRIPTS_DIR;
+        File shortcutDir = ShortcutsDirPreference.getEffectiveShortcutsDir(getBaseContext());
 
         List<File> shortcutFiles = new ArrayList<>();
         addShortcutFile(shortcutDir, shortcutFiles, 0);

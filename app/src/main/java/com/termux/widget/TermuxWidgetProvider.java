@@ -238,6 +238,10 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
      * @param intent The {@link Intent} received for the shortcut file.
      */
     public static void handleTermuxShortcutExecutionIntent(Context context, Intent intent, String logTag) {
+        handleTermuxShortcutExecutionIntent(context, intent, logTag, null);
+    }
+
+    public static void handleTermuxShortcutExecutionIntent(Context context, Intent intent, String logTag, String[] arguments) {
         if (context == null || intent == null) return;
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
         String token = intent.getStringExtra(TermuxConstants.TERMUX_WIDGET_APP.EXTRA_TOKEN_NAME);
@@ -247,7 +251,7 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
             return;
         }
 
-        sendExecutionIntentToTermuxService(context, intent.getData().getPath(), logTag);
+        sendExecutionIntentToTermuxService(context, intent.getData().getPath(), logTag, arguments);
     }
 
     /**
@@ -257,6 +261,10 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
      * @param shortcutFilePath The path to the shortcut file.
      */
     public static void sendExecutionIntentToTermuxService(final Context context, String shortcutFilePath, String logTag) {
+        sendExecutionIntentToTermuxService(context, shortcutFilePath, logTag, null);
+    }
+
+    public static void sendExecutionIntentToTermuxService(final Context context, String shortcutFilePath, String logTag, String[] arguments) {
         if (context == null) return;
 
         logTag = DataUtils.getDefaultIfNull(logTag, LOG_TAG);
@@ -338,11 +346,14 @@ public final class TermuxWidgetProvider extends AppWidgetProvider {
         // If the script does not have the executable permission (common for files on shared/
         // external storage, whose filesystem often does not support the unix exec bit at all),
         // run it through bash instead of executing it directly.
-        String[] executionArguments = null;
+        // With the bash fallback the script path must be the first argument, user arguments follow it.
+        List<String> executionArgumentsList = new ArrayList<>();
         if (!executableHasExecPermission) {
-            executionArguments = new String[] { executionCommand.executable };
+            executionArgumentsList.add(executionCommand.executable);
             executionCommand.executable = TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash";
         }
+        if (arguments != null) executionArgumentsList.addAll(Arrays.asList(arguments));
+        String[] executionArguments = executionArgumentsList.isEmpty() ? null : executionArgumentsList.toArray(new String[0]);
 
         // Create execution intent with the action TERMUX_SERVICE#ACTION_SERVICE_EXECUTE to be sent to the TERMUX_SERVICE
         executionCommand.executableUri = new Uri.Builder().scheme(TERMUX_SERVICE.URI_SCHEME_SERVICE_EXECUTE).path(executionCommand.executable).build();

@@ -94,4 +94,7 @@
     <string name="error_create_pinned_shortcut_failed">Failed to create pinned shortcut for \"%1$s\"</string>
     <string name="error_create_static_shortcut_failed">Failed to create static shortcut for \"%1$s\"</string>
 
+    <string name="title_script_arguments">Arguments for %1$s</string>
+    <string name="hint_script_arguments">Optional, e.g. --flag \"two words\"</string>
+    <string name="action_create">Create</string>
 </resources>

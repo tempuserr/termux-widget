@@ -22,6 +22,11 @@ import com.termux.widget.utils.ShortcutsDirPreference;
 
 import java.io.File;
 import java.util.Arrays;
+import android.text.InputType;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 
 public class TermuxCreateShortcutActivity extends AppCompatActivity {
 
@@ -59,8 +64,7 @@ public class TermuxCreateShortcutActivity extends AppCompatActivity {
             if (clickedFile.isDirectory()) {
                 updateListview(clickedFile);
             } else {
-                createShortcut(context, clickedFile);
-                finish();
+                promptForArgumentsAndCreateShortcut(clickedFile);
             }
         });
     }
@@ -104,9 +108,37 @@ public class TermuxCreateShortcutActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void promptForArgumentsAndCreateShortcut(final File clickedFile) {
+        final EditText input = new EditText(this);
+        input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        input.setHint(R.string.hint_script_arguments);
 
+        FrameLayout container = new FrameLayout(this);
+        int margin = (int) (20 * getResources().getDisplayMetrics().density);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.leftMargin = margin;
+        lp.rightMargin = margin;
+        input.setLayoutParams(lp);
+        container.addView(input);
 
-    private void createShortcut(Context context, File clickedFile) {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.title_script_arguments, clickedFile.getName()))
+                .setView(container)
+                .setPositiveButton(R.string.action_create, (d, which) -> {
+                    createShortcut(TermuxCreateShortcutActivity.this, clickedFile, input.getText().toString());
+                    finish();
+                })
+                .setNegativeButton(android.R.string.cancel, null) // zostajesz na liście plików
+                .create();
+
+        if (dialog.getWindow() != null)
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        dialog.show();
+    }
+
+    private void createShortcut(Context context, File clickedFile, String arguments) {
         boolean isPinnedShortcutSupported = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ShortcutManager shortcutManager = ShortcutUtils.getShortcutManager(context, LOG_TAG, true);
@@ -115,6 +147,7 @@ public class TermuxCreateShortcutActivity extends AppCompatActivity {
         }
 
         ShortcutFile shortcutFile = new ShortcutFile(clickedFile);
+        shortcutFile.setArguments(arguments);
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isPinnedShortcutSupported)

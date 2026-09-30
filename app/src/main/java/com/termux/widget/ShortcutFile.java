@@ -30,6 +30,8 @@ import com.termux.widget.utils.ShortcutUtils;
 import com.termux.widget.utils.ShortcutsDirPreference;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class ShortcutFile {
 
@@ -38,6 +40,71 @@ public final class ShortcutFile {
     public final String mPath;
     public String mLabel;
 
+    public static final String EXTRA_SHORTCUT_ARGUMENTS = "com.termux.widget.extra.SHORTCUT_ARGUMENTS";
+
+    @Nullable
+    private String mArguments;
+
+    public void setArguments(@Nullable String arguments) {
+        mArguments = DataUtils.isNullOrEmpty(arguments) ? null : arguments.trim();
+        if (mArguments != null && mArguments.isEmpty()) mArguments = null;
+    }
+
+    @Nullable
+    public String getArguments() {
+        return mArguments;
+    }
+
+    /**
+     * Id of the pinned shortcut. Includes the arguments, otherwise a second shortcut to the same
+     * script with different arguments would just replace the first one instead of being added.
+     */
+    @NonNull
+    private String getShortcutId() {
+        return mArguments == null ? getPath() : getPath() + "?" + mArguments;
+    }
+
+    /** Splits a string into arguments, honouring 'single' and "double" quotes and backslash escapes. */
+    @NonNull
+    public static String[] splitArguments(@Nullable String input) {
+        List<String> result = new ArrayList<>();
+        if (input == null) return new String[0];
+
+        StringBuilder current = new StringBuilder();
+        boolean inToken = false;
+        char quote = 0;
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (quote != 0) {
+                if (c == quote) {
+                    quote = 0;
+                } else if (c == '\\' && quote == '"' && i + 1 < input.length()) {
+                    current.append(input.charAt(++i));
+                } else {
+                    current.append(c);
+                }
+            } else if (c == '"' || c == '\'') {
+                quote = c;
+                inToken = true;
+            } else if (c == '\\' && i + 1 < input.length()) {
+                current.append(input.charAt(++i));
+                inToken = true;
+            } else if (Character.isWhitespace(c)) {
+                if (inToken) {
+                    result.add(current.toString());
+                    current.setLength(0);
+                    inToken = false;
+                }
+            } else {
+                current.append(c);
+                inToken = true;
+            }
+        }
+        if (inToken) result.add(current.toString());
+        return result.toArray(new String[0]);
+    }
+    
     public ShortcutFile(@NonNull String path) {
         this(path, null);
     }
@@ -90,12 +157,14 @@ public final class ShortcutFile {
         executionIntent.setAction(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE); // Mandatory for pinned shortcuts
         executionIntent.setData(scriptUri);
         executionIntent.putExtra(TERMUX_WIDGET_APP.EXTRA_TOKEN_NAME, TermuxWidgetAppSharedPreferences.getGeneratedToken(context));
+        if (mArguments != null)
+            executionIntent.putExtra(EXTRA_SHORTCUT_ARGUMENTS, mArguments);
         return executionIntent;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N_MR1)
     public ShortcutInfo getShortcutInfo(Context context, boolean showToastForIconUsed) {
-        ShortcutInfo.Builder builder = new ShortcutInfo.Builder(context, getPath());
+        ShortcutInfo.Builder builder = new ShortcutInfo.Builder(context, getShortcutId());
         builder.setIntent(getExecutionIntent(context));
         builder.setShortLabel(getLabel());
 
